@@ -1,0 +1,1 @@
+# CareerMail Core module
