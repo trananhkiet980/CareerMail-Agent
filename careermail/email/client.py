@@ -96,7 +96,7 @@ def _strip_html(html_str: str) -> str:
 
 
 def _extract_body_recursive(part: dict) -> tuple[str, str]:
-    """Duyệt đệ quy tìm text/plain hoặc text/html trong cây multipart."""
+    """Recursively traverse MIME multipart tree to extract plain text and HTML content."""
     mime = part.get("mimeType", "")
     body_data = part.get("body", {}).get("data")
     plain = ""
@@ -175,18 +175,19 @@ def search_emails(query: str, max_results: int = 10, account_id: int | None = No
                 **tag,
             }
         )
-    # Sắp xếp theo timestamp thực tế (mili-giây) từ Gmail thay vì sort chuỗi RFC 2822
+    # Sort strictly by chronological internal timestamp (epoch milliseconds)
     result.sort(key=lambda m: m.get("timestamp") or 0, reverse=True)
     return result
 
 
 def read_email(message_id: str, max_chars: int = 8000, account_id: int | None = None) -> dict:
+    """Fetch complete email payload and return formatted metadata and sanitized body."""
     service = _get_service(account_id)
     msg = service.users().messages().get(userId="me", id=message_id, format="full").execute()
     headers = _headers(msg, {"from", "to", "subject", "date"})
     body = _body_from_payload(msg.get("payload", {}))
     if len(body) > max_chars:
-        body = body[:max_chars] + "\n...[nội dung đã được rút gọn]"
+        body = body[:max_chars] + "\n...[truncated]"
     return {
         "id": msg["id"],
         "from": headers.get("from", ""),
@@ -205,7 +206,7 @@ def _build_raw_message(
     body: str,
     attachment_path: str | None = None,
 ) -> str:
-    """Tạo MIME message hỗ trợ cả text thuần lẫn file đính kèm (CV PDF/Word)."""
+    """Construct a base64url-encoded MIME message supporting text and attachments."""
     if attachment_path and os.path.isfile(attachment_path):
         message = MIMEMultipart()
         message["To"] = to_addr
@@ -232,7 +233,7 @@ def create_draft(
     attachment_path: str | None = None,
     account_id: int | None = None,
 ) -> str:
-    """Tạo bản nháp trong Gmail (cần scope gmail.compose). Trả về draft id."""
+    """Create a draft message in Gmail using gmail.compose scope. Returns draft id."""
     service = _get_service(account_id)
     raw = _build_raw_message(to_addr, subject, body, attachment_path)
     draft = (

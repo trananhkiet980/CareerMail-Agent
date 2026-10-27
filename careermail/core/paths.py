@@ -12,19 +12,20 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def is_frozen() -> bool:
+    """Check if application is running in a PyInstaller bundle."""
     return bool(getattr(sys, "frozen", False))
 
 
 def app_root() -> Path:
-    """Nơi chứa tài nguyên khi đóng gói (assets, templates, bin); repo root khi dev."""
+    """Return root directory for bundled resources (assets, templates, bin) or repository root."""
     if is_frozen():
         return Path(getattr(sys, "_MEIPASS"))
     return _PROJECT_ROOT
 
 
 def base_dir() -> Path:
-    """Thư mục chứa data/ và logs/ — ngang cấp với careermail/, assets/."""
-    env = os.getenv("CAREERMAIL_DATA_DIR") or os.getenv("CHATBOT_DATA_DIR")
+    """Return base directory containing user data/ and logs/."""
+    env = os.getenv("CAREERMAIL_DATA_DIR")
     if env:
         return Path(env).expanduser().resolve()
     if is_frozen():
@@ -41,6 +42,7 @@ def _legacy_log_dir() -> Path:
 
 
 def data_dir() -> Path:
+    """Ensure and return path to application data directory."""
     path = base_dir() / "data"
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -52,6 +54,7 @@ def data_dir() -> Path:
 
 
 def log_dir() -> Path:
+    """Ensure and return path to application logs directory."""
     path = base_dir() / "logs"
     try:
         path.mkdir(parents=True, exist_ok=True)
@@ -63,6 +66,7 @@ def log_dir() -> Path:
 
 
 def resource_path(*parts: str) -> Path:
+    """Resolve an absolute path to a resource asset or template."""
     return app_root().joinpath(*parts)
 
 
@@ -71,7 +75,8 @@ def _secret_file() -> Path:
 
 
 def load_or_create_secret() -> str:
-    env_value = os.getenv("CAREERMAIL_SECRET_KEY") or os.getenv("SECRET_KEY")
+    """Retrieve or generate 256-bit encryption key for local credential security."""
+    env_value = os.getenv("CAREERMAIL_SECRET_KEY")
     if env_value:
         return env_value
     path = _secret_file()

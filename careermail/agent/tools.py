@@ -12,6 +12,7 @@ def _dumps(data) -> str:
 
 
 def _primary_query(query: str) -> str:
+    """Focus queries on the Primary inbox category by default to filter out noise."""
     q = (query or "").strip()
     low = q.lower()
     if any(token in low for token in ("category:", "label:", "in:")):
@@ -20,6 +21,7 @@ def _primary_query(query: str) -> str:
 
 
 def _resolve_account(account):
+    """Match account identifier against label, email, or id."""
     accounts = storage.list_gmail_accounts()
     if not accounts:
         return None, accounts
@@ -43,7 +45,7 @@ def _resolve_account(account):
 @tool
 def list_gmail_accounts() -> str:
     """
-    Liệt kê các tài khoản Gmail đã kết nối (id, email, nhãn, tài khoản mặc định).
+    List all connected Gmail accounts with their id, email, label, and default status.
     """
     return _dumps(storage.list_gmail_accounts())
 
@@ -51,35 +53,35 @@ def list_gmail_accounts() -> str:
 @tool
 def search_emails(query: str, max_results: int = 10, account: str | None = None) -> str:
     """
-    Tìm email bằng cú pháp Gmail search (vd: 'from:x@gmail.com', 'is:unread', 'subject:invoice').
-    Mặc định tìm trong hộp thư chính (Primary) để tránh nhiễu.
-    account = nhãn/email/id tài khoản Gmail; để trống sẽ dùng tài khoản mặc định.
+    Search emails using Gmail query syntax (e.g. 'from:hr@company.com', 'is:unread', 'subject:interview').
+    Defaults to Primary inbox category unless specified otherwise.
+    account: optional account identifier/label/email. If omitted, uses default account.
     """
     acct, _ = _resolve_account(account)
     if acct is None:
-        return "LỖI: chưa có tài khoản Gmail nào được kết nối."
+        return "ERROR: No connected Gmail account found."
     try:
         results = gmail_client.search_emails(
             _primary_query(query), max_results, account_id=acct["id"]
         )
     except Exception as e:
-        return f"LỖI: {e}"
+        return f"ERROR: {e}"
     return _dumps(results)
 
 
 @tool
 def read_email(message_id: str, account: str | None = None) -> str:
     """
-    Đọc toàn bộ nội dung một email theo message_id (lấy từ search_emails).
-    account = tài khoản chứa email đó (nên truyền đúng tài khoản đã tìm ra email).
+    Fetch and read full content of a specific email by its message_id.
+    account: the account containing the target email.
     """
     acct, _ = _resolve_account(account)
     if acct is None:
-        return "LỖI: chưa có tài khoản Gmail nào được kết nối."
+        return "ERROR: No connected Gmail account found."
     try:
         result = gmail_client.read_email(message_id, account_id=acct["id"])
     except Exception as e:
-        return f"LỖI: {e}"
+        return f"ERROR: {e}"
     return _dumps(result)
 
 
@@ -92,20 +94,22 @@ def request_send_email(
     account: str | None = None,
 ) -> str:
     """
-    Chuẩn bị gửi email (lưu dự thảo, KHÔNG gửi ngay). User sẽ bấm xác nhận trong Telegram.
-    to = địa chỉ người nhận. subject = tiêu đề thư. body = nội dung thư.
-    attachment_path = đường dẫn file đính kèm (nếu có, ví dụ file CV PDF).
-    account = nhãn/email tài khoản gửi.
+    Draft an email and queue it for sending. The email is NOT sent immediately;
+    the user must confirm via the interactive button in Telegram.
+    to: recipient email address.
+    subject: email subject.
+    body: email body text.
+    attachment_path: optional local file path to attach (such as a tailored CV PDF).
+    account: optional sender account label or email.
     """
     if not (to and subject and body):
-        return "LỖI: cần đủ to, subject, body."
+        return "ERROR: to, subject, and body parameters are required."
     acct, accounts = _resolve_account(account)
     if acct is None:
-        labels = ", ".join((a["label"] or a["email"]) for a in accounts) or "(trống)"
+        labels = ", ".join((a["label"] or a["email"]) for a in accounts) or "(empty)"
         return (
-            "CẦN HỎI USER: có nhiều tài khoản Gmail ("
-            f"{labels}). Hãy hỏi user muốn gửi từ tài khoản nào, "
-            "rồi gọi lại request_send_email kèm tham số account."
+            "CLARIFICATION NEEDED: Multiple accounts exist ("
+            f"{labels}). Please ask the user which account to send from."
         )
     draft_id = ""
     try:
@@ -113,7 +117,7 @@ def request_send_email(
             to, subject, body, attachment_path=attachment_path, account_id=acct["id"]
         )
     except Exception as exc:
-        record_event("WARNING", "agent", f"create_draft lỗi (bỏ qua draft): {exc}")
+        record_event("WARNING", "agent", f"create_draft failed (skipping draft): {exc}")
 
     pending_id = storage.create_pending_action(
         to,
@@ -129,7 +133,7 @@ def request_send_email(
             "from_account": acct["label"] or acct["email"],
             "has_attachment": bool(attachment_path),
             "draft_created": bool(draft_id),
-            "message": "Đã lưu dự thảo email. Hãy báo user bấm nút xác nhận trong Telegram để gửi.",
+            "message": "Draft created successfully. Prompt user to confirm sending in Telegram.",
         }
     )
 
