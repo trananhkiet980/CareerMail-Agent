@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 build/
 develop-eggs/
@@ -28,10 +25,14 @@ venv/
 env/
 ENV/
 
-# Local data & logs (sensitive)
-data/
+# Sensitive Runtime Data & Logs
 logs/
 .env
+data/careermail.db
+data/careermail.lock
+data/secret.key
+data/generated_cvs/
+data/master_profile.json
 
 # OS & IDE
 .DS_Store

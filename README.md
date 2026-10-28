@@ -56,3 +56,18 @@ Cửa sổ **CareerMail-Agent Settings** sẽ xuất hiện:
   * Bấm **Thêm tài khoản Gmail** và xác thực trên trình duyệt.
 
 Sau khi thiết lập xong, bạn có thể đóng cửa sổ lại, ứng dụng sẽ thu nhỏ xuống chạy ngầm dưới khay hệ thống (System Tray). Bạn chỉ việc mở Telegram trên điện thoại để chat với bot!
+
+---
+
+### 📄 Thiết Lập Hồ Sơ Ứng Viên (Master Profile) & Tự Động Tùy Biến CV
+
+Để tính năng tự động tinh chỉnh CV hoạt động, CareerMail-Agent cần dữ liệu hồ sơ thực tế của bạn tại `data/master_profile.json`:
+
+1. **Cách nhanh nhất bằng AI (1 phút):**
+   * Đọc tài liệu hướng dẫn và copy câu prompt tại [docs/PROFILE_GENERATOR.md](docs/PROFILE_GENERATOR.md).
+   * Dán vào Antigravity / ChatGPT / Claude kèm CV cũ của bạn để AI tự động trích xuất thành khối JSON.
+   * Dán kết quả vào file `data/master_profile.json`.
+2. **Khởi tạo từ file mẫu:**
+   * Bạn có thể sao chép file mẫu có sẵn `master_profile.example.json` thành `data/master_profile.json` rồi chỉnh sửa trực tiếp.
+3. **Cài đặt trình biên dịch LaTeX (Tectonic):**
+   * Tải file `tectonic.exe` (~30MB) từ [Tectonic Releases](https://github.com/tectonic-typesetting/tectonic/releases) và đặt vào thư mục `bin/` của dự án để ứng dụng tự động xuất file PDF CV chuẩn ATS.
