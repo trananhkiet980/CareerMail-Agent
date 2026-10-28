@@ -1,0 +1,58 @@
+{
+  "personal_info": {
+    "name": "Nguyen Van A",
+    "location": "Ho Chi Minh City, Vietnam",
+    "phone": "0901234567",
+    "email": "nguyenvana@example.com",
+    "github": "https://github.com/nguyenvana",
+    "linkedin": "https://www.linkedin.com/in/nguyenvana"
+  },
+  "education": {
+    "degree": "Bachelor of Computer Science",
+    "institution": "University of Technology",
+    "period": "September 2022 - September 2026",
+    "details": "GPA: 8.5 / 10.0 (High Distinction)"
+  },
+  "certifications": [
+    "IELTS 7.5",
+    "AWS Certified Solutions Architect - Associate"
+  ],
+  "default_track": "software_engineer",
+  "tracks": {
+    "software_engineer": {
+      "display_title": "Software Engineer",
+      "summary": "Proactive Computer Science graduate with hands-on experience in building scalable web backends, RESTful APIs, and distributed microservices. Passionate about clean code, performance optimization, and modern software engineering practices.",
+      "skills_categories": {
+        "Languages": "Python, Java, TypeScript, SQL",
+        "Frameworks": "FastAPI, Spring Boot, React, Node.js",
+        "Databases & Cloud": "PostgreSQL, Redis, Docker, AWS (EC2, S3), Git"
+      },
+      "selected_project_ids": ["sample_project_1"]
+    }
+  },
+  "experiences": [
+    {
+      "company": "Tech Corp",
+      "role": "Software Engineer Intern",
+      "period": "June 2025 - December 2025",
+      "location": "Ho Chi Minh City",
+      "bullet_points": [
+        "{\\bf API Development:} Designed and maintained RESTful microservices using FastAPI and PostgreSQL, serving 10,000+ daily active users.",
+        "{\\bf System Optimization:} Reduced database query response times by 35% through indexing and Redis caching."
+      ]
+    }
+  ],
+  "all_projects": [
+    {
+      "id": "sample_project_1",
+      "name": "E-Commerce Microservices Platform",
+      "role": "Lead Backend Developer",
+      "period": "2025 - Present",
+      "github": "https://github.com/nguyenvana/ecommerce-microservices",
+      "bullet_points": [
+        "{\\bf Architecture:} Built asynchronous event-driven backend using FastAPI, Kafka, and Docker with PostgreSQL database.",
+        "{\\bf Deployment:} Automated CI/CD pipeline using GitHub Actions, cutting release deployment time by 50%."
+      ]
+    }
+  ]
+}
